@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+namgen_version=1.0
 set -x
 squawk () {
   # This function simplifies error reporting and verbosity
@@ -12,7 +13,7 @@ squawk () {
   shift
   squawk="$@"
 
-  if [[ "$VERBOSITY" -ge "$squawk_lvl" ]] ; then
+  if [[ "${VERBOSITY}" -ge "$squawk_lvl" ]] ; then
     if [[ "$squawk_lvl" -le 20 ]] ; then
       count_squawk=0
       while [[ "$count_squawk" -lt "$squawk_lvl" ]]; do
@@ -34,7 +35,7 @@ set_verbosity () {
   else
     VERBOSITY=$1
   fi
-  squawk 5 " verbosity is now $VERBOSITY"
+  squawk 5 " verbosity is now ${VERBOSITY}"
 }
 
 print_help () {
@@ -43,7 +44,7 @@ print_help () {
 
 increase_verbosity () {
   ((++VERBOSITY))
-  squawk 5 " verbosity is now $VERBOSITY"
+  squawk 5 " verbosity is now ${VERBOSITY}"
 }
 ORIGINAL_OPTS=$@
 # Execute getopt on the arguments passed to this program, identified by the special character $@
@@ -52,7 +53,7 @@ long_opts="count:,message:,test:,loop:,help,debug,version,verbosity,verbose,test
 PARSED_OPTIONS=$(getopt --alternative -n "$0" -o "$short_opts" --long "$long_opts" -- "$@")
 
 # A little magic, necessary when using getopt.
-eval set -- "$PARSED_OPTIONS"
+eval set -- "${PARSED_OPTIONS}"
 
   opt_loop_count=1
   while true; do
@@ -66,7 +67,7 @@ eval set -- "$PARSED_OPTIONS"
         debug=true
         shift;;
       --version)
-        echo "Kubash, version $KUBASH_VERSION"
+        echo "namgen, version ${namgen_version}"
         exit 0
         shift;;
       -c|--count)
@@ -77,9 +78,6 @@ eval set -- "$PARSED_OPTIONS"
         shift 2 ;;
       --test-first)
         TEST_FIRST="true"
-        shift 2 ;;
-      -y|--yes)
-        YES="$2"
         shift 2 ;;
       -o|--opts)
         OPTS="$2"
@@ -101,8 +99,7 @@ eval set -- "$PARSED_OPTIONS"
 
 #: "${OPTS:=}"
 : "${TEST:=make test}"
-: "${YES:=--yes-always}"
-: "${LOOP:=aider ${YES} -m \"/test ${TEST}\" ${OPTS}}"
+: "${LOOP:=aider --file src/namgen.cpp -m 'improve the performance of this code'}"
 : "${COUNT:=11}"
 countzero=0
 
@@ -112,7 +109,7 @@ fi
 while [[ ${countzero} -lt ${COUNT} ]]; do
   ((countzero++))
   ${LOOP}
-  $TEST
+  ${TEST}
   if [[ $? -eq 0 ]]; then
     break
   else

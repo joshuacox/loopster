@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+squawk () {
+  # This function simplifies error reporting and verbosity
+  # and it always prints its message along with anything in $error_report_log
+  # call it by preceding your message with a verbosity level
+  # e.g. `squawk 3 "This is a squawk"`
+  # if the current verbosity level is greater than or equal to
+  # the number given then this function will echo out your message
+  # and pad it with # to let you now how verbose that message was
+  squawk_lvl="$1"
+  shift
+  squawk="$@"
+
+  if [[ "$VERBOSITY" -ge "$squawk_lvl" ]] ; then
+    if [[ "$squawk_lvl" -le 20 ]] ; then
+      count_squawk=0
+      while [[ "$count_squawk" -lt "$squawk_lvl" ]]; do
+        printf '#'
+        ((++count_squawk))
+      done
+      printf ' %s\n' "$squawk"
+    else
+      printf '#>{ '
+      printf '%s' "$squawk_lvl"
+      printf ' }<# '
+      printf ' %s\n' "$squawk"
+    fi
+  fi
+}
+set_verbosity () {
+  if ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    VERBOSITY=0
+  else
+    VERBOSITY=$1
+  fi
+  squawk 5 " verbosity is now $VERBOSITY"
+}
+
+print_help () {
+  printf 'useage:\n%s  --count 100 --test make --loop "aider --file src/main.c -m '\''improve performance'\''"\n' $0
+}
+
+increase_verbosity () {
+  ((++VERBOSITY))
+  squawk 5 " verbosity is now $VERBOSITY"
+}
+ORIGINAL_OPTS=$@
+# Execute getopt on the arguments passed to this program, identified by the special character $@
+short_opts="c:t:m:l:hv"
+long_opts="count:,message:,test:,loop:,help,debug,version,verbosity,verbose"
+PARSED_OPTIONS=$(getopt --alternative -n "$0" -o "$short_opts" --long "$long_opts" -- "$@")
+
+# A little magic, necessary when using getopt.
+eval set -- "$PARSED_OPTIONS"
+
+  opt_loop_count=1
+  while true; do
+    squawk 5 "$opt_loop_count $@"
+    ((++opt_loop_count))
+    case "$1" in
+      -h|--help)
+        print_help
+        shift;;
+      --debug)
+        debug=true
+        shift;;
+      --version)
+        echo "Kubash, version $KUBASH_VERSION"
+        exit 0
+        shift;;
+      -c|--count)
+        COUNT="$2"
+        shift 2 ;;
+      -t|--test)
+        TEST="$2"
+        shift 2 ;;
+      -y|--yes)
+        YES="$2"
+        shift 2 ;;
+      -o|--opts)
+        OPTS="$2"
+        shift 2 ;;
+      -l|--loop)
+        LOOP="$2"
+        shift 2 ;;
+      -v|--verbose)
+        increase_verbosity
+        shift;;
+      --verbosity)
+        set_verbosity $2
+        shift 2 ;;
+      --)
+        shift
+        break;;
+    esac
+  done
+
+#: "${OPTS:=}"
+: "${TEST:=make test}"
+: "${YES:=--yes-always}"
+: "${LOOP:=aider ${YES} -m \"/test ${TEST}\" ${OPTS}}"
+: "${COUNT:=11}"
+countzero=0
+
+$TEST
+if [[ ! $? -eq 0 ]]; then
+while [[ ${countzero} -lt ${COUNT} ]]; do
+  ${LOOP}
+  ((countzero++))
+  $TEST
+
+  if [[ $? -eq 0 ]]; then
+    break
+  else
+    if [[ ${countzero} -lt ${COUNT} ]]; then
+      squawk 5 "continuing as ${TEST} failed to return 0"
+    fi
+  fi
+done
+fi

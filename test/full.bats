@@ -25,7 +25,8 @@ setup() {
   make test
 }
 @test "test loopster at 15" {
-  result="$(./loopster -t 'echo 15')"
+  result="$(./loopster -t 'sleep 0.00000000001' -l 'echo 15')"
+  echo $result
   [[ "$result" -eq 15 ]]
 }
 @test "test loopster at 11 loops" {

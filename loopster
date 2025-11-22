@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 squawk () {
   # This function simplifies error reporting and verbosity
   # and it always prints its message along with anything in $error_report_log
@@ -47,7 +48,7 @@ increase_verbosity () {
 ORIGINAL_OPTS=$@
 # Execute getopt on the arguments passed to this program, identified by the special character $@
 short_opts="c:t:m:l:hv"
-long_opts="count:,message:,test:,loop:,help,debug,version,verbosity,verbose"
+long_opts="count:,message:,test:,loop:,help,debug,version,verbosity,verbose,test-first"
 PARSED_OPTIONS=$(getopt --alternative -n "$0" -o "$short_opts" --long "$long_opts" -- "$@")
 
 # A little magic, necessary when using getopt.
@@ -73,6 +74,9 @@ eval set -- "$PARSED_OPTIONS"
         shift 2 ;;
       -t|--test)
         TEST="$2"
+        shift 2 ;;
+      --test-first)
+        TEST_FIRST="true"
         shift 2 ;;
       -y|--yes)
         YES="$2"
@@ -102,19 +106,18 @@ eval set -- "$PARSED_OPTIONS"
 : "${COUNT:=11}"
 countzero=0
 
-$TEST
-if [[ ! $? -eq 0 ]]; then
+if [[ ${VERBOSITY} -gt 10 ]]; then
+  set -x
+fi
 while [[ ${countzero} -lt ${COUNT} ]]; do
-  ${LOOP}
   ((countzero++))
+  ${LOOP}
   $TEST
-
   if [[ $? -eq 0 ]]; then
     break
   else
     if [[ ${countzero} -lt ${COUNT} ]]; then
-      squawk 5 "continuing as ${TEST} failed to return 0"
+      squawk 5 "continue looping as ${TEST} failed to return 0"
     fi
   fi
 done
-fi

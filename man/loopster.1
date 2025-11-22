@@ -1,0 +1,47 @@
+.TH LOOPSTER 1 "November 2025" "1.0" "Loopster Manual"
+.SH NAME
+loopster \- wrapper around commands to repeatedly run a worker command until a test passes
+.SH SYNOPSIS
+.B loopster
+.RI [ options ]
+.SH DESCRIPTION
+Loopster is a shell script that repeatedly executes a specified worker command
+until a test command succeeds or a maximum number of attempts is reached.
+It provides convenient options for controlling the test command, the worker
+command, the number of attempts, and verbosity.
+.SH OPTIONS
+.TP
+.B \-h,\ --help
+Show a brief help message and exit.
+.TP
+.B \-v,\ --version
+Show version information and exit.
+.TP
+.B \-t,\ --test \fIcommand\fR
+Set the command that will be executed to test for success.
+.TP
+.B \-l,\ --loop \fIcommand\fR
+Set the worker command that will be executed repeatedly until the test succeeds.
+.TP
+.B \-c,\ --count \fInumber\fR
+Set the maximum number of loop iterations (default: 33).
+.TP
+.B \-v,\ --verbose
+Increase verbosity; can be used multiple times (e.g., \-vvv).
+.TP
+.B \-\-verbosity \fIlevel\fR
+Set the initial verbosity level (default: 0).
+.SH USAGE
+.nf
+# Run \`make test\` until it succeeds, looping \`aider\` as the worker:
+loopster \\
+    --test "make test" \\
+    --loop "aider --yes-always -m \"/test make test\"" \\
+    --count 11 \\
+    -vv
+.fi
+.SH AUTHOR
+Joshua Edward McLauglin Cox <https://joshuacox.github.io/loopster>
+.SH SEE ALSO
+.BR bash (1),
+.BR getopt (1)

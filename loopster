@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-namgen_version=1.0
+: ${VERBOSITY:=0}
+
 squawk () {
   # This function simplifies error reporting and verbosity
   # and it always prints its message along with anything in $error_report_log
@@ -62,14 +63,9 @@ eval set -- "${PARSED_OPTIONS}"
     case "$1" in
       -h|--help)
         print_help
-        exit 0
         shift;;
       --debug)
         debug=true
-        shift;;
-      --version)
-        echo "namgen, version ${namgen_version}"
-        exit 0
         shift;;
       -c|--count)
         COUNT="$2"
@@ -89,9 +85,6 @@ eval set -- "${PARSED_OPTIONS}"
       --infinite)
         INFINITE='true'
         shift ;;
-      -o|--opts)
-        OPTS="$2"
-        shift 2 ;;
       -w|--wait)
         WAIT="$2"
         shift 2 ;;
@@ -107,7 +100,6 @@ eval set -- "${PARSED_OPTIONS}"
     esac
   done
 
-#: "${OPTS:=}"
 : "${TEST:=echo ./test.sh}"
 : "${LOOP:=echo ./iter.sh}"
 : "${COUNT:=11}"
@@ -120,7 +112,6 @@ if [[ $COUNT -eq 0 ]];  then
   INFINITE='false'
   COUNT=1
 fi
-
 
 if [[ ${VERBOSITY} -gt 10 ]]; then
   set -x

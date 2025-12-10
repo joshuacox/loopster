@@ -16,5 +16,4 @@
 
 ## Installation
 
-curl -sL https://raw.githubusercontent.com/joshuacox/loopster/refs/heads/master/bootstrap.sh | bash
-
+ curl -sL https://raw.githubusercontent.com/joshuacox/loopster/refs/heads/main/bootstrap.sh | bash

@@ -38,7 +38,7 @@ set_verbosity () {
 }
 
 print_help () {
-  printf 'useage:\n%s  --count 100 --test make --loop "aider --file src/main.c -m '\''improve performance'\''"\n' $0
+  printf 'useage:\n%s  --count 100 --success-cleanup "git checkout -b $this_branch-success" --fail-cleanup "git checkout -b $this_branch-fail"  --test "make clean && make && sudo make install && make test" --loop "aider --file src/main.c -m '\''improve performance'\''"\n' $0
 }
 
 increase_verbosity () {
@@ -62,6 +62,7 @@ eval set -- "${PARSED_OPTIONS}"
     case "$1" in
       -h|--help)
         print_help
+        exit 0
         shift;;
       --debug)
         debug=true
@@ -78,6 +79,12 @@ eval set -- "${PARSED_OPTIONS}"
         shift 2 ;;
       -t|--test)
         TEST="$2"
+        shift 2 ;;
+      --fail-cleanup)
+        FAIL_CLEANUP="$2"
+        shift 2 ;;
+      --success-cleanup)
+        SUCCESS_CLEANUP="$2"
         shift 2 ;;
       --infinite)
         INFINITE='true'
@@ -101,11 +108,13 @@ eval set -- "${PARSED_OPTIONS}"
   done
 
 #: "${OPTS:=}"
-: "${TEST:=make test}"
-: "${LOOP:=./iter.sh}"
+: "${TEST:=echo ./test.sh}"
+: "${LOOP:=echo ./iter.sh}"
 : "${COUNT:=11}"
 : "${WAIT:=0}"
 : "${INFINITE:='false'}"
+: "${FAIL_CLEANUP:=echo fail}"
+: "${SUCCESS_CLEANUP:=echo success}"
 countzero=0
 if [[ $COUNT -eq 0 ]];  then
   INFINITE='false'
@@ -134,3 +143,13 @@ while [[ ${countzero} -lt ${COUNT} ]]; do
     sleep ${WAIT}
   fi
 done
+${TEST}
+if [[ $? -eq 0 ]]; then
+  ${SUCCESS_CLEANUP}
+  exit 0
+else
+  ${FAIL_CLEANUP}
+  if [[ ${countzero} -lt ${COUNT} ]]; then
+    squawk 5 "continue looping as ${TEST} failed to return 0"
+  fi
+fi

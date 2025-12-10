@@ -6,14 +6,30 @@
 - Retrying flaky test suites while generating useful output in the meantime.
 - Automating retry loops with customizable verbosity.
 
+---
+
+## Table of Contents
+
+- [Features](#features)  
+- [Installation](#installation)  
+- [Quick Start](#quick-start)  
+- [Usage](#usage)  
+  - [Command‑line Options](#command‑line-options)  
+  - [Examples](#examples)  
+- [Contributing](#contributing)  
+- [License](#license)  
+
+---
+
 ## Features
 
 - **Configurable worker and test commands** – supply any shell command.
 - **Maximum iteration count** – set a limit or use `0` for unlimited retries.
-- **Verbosity control** – `-v`/`--verbose` to increase output, or `--verbosity N` to set a specific level.
+- **Verbosity control** – `-v/--verbose` to increase output, or `--verbosity N` to set a specific level.
 - **Help and version information** – `-h/--help` and `-V/--version`.
 - **Self‑documenting man page** – `man ./man/loopster.1`.
 
+---
+
 ## Installation
 
- curl -sL https://raw.githubusercontent.com/joshuacox/loopster/refs/heads/main/bootstrap.sh | bash

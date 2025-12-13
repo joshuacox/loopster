@@ -108,7 +108,7 @@ eval set -- "${PARSED_OPTIONS}"
 : "${INFINITE:='false'}"
 : "${FAIL_CLEANUP:=echo fail}"
 : "${SUCCESS_CLEANUP:=echo success}"
-countzero=0
+loopster_count=0
 if [[ $COUNT -eq 0 ]];  then
   INFINITE='false'
   COUNT=1
@@ -117,17 +117,18 @@ fi
 if [[ ${VERBOSITY} -gt 10 ]]; then
   set -x
 fi
-while [[ ${countzero} -lt ${COUNT} ]]; do
+while [[ ${loopster_count} -lt ${COUNT} ]]; do
   ${LOOP}
   ${TEST}
   if [[ $? -eq 0 ]]; then
     break
   else
-    if [[ ${countzero} -lt ${COUNT} ]]; then
+    if [[ ${loopster_count} -lt ${COUNT} ]]; then
       squawk 5 "continue looping as ${TEST} failed to return 0"
     fi
   fi
-  ((countzero++))
+  ((loopster_count++))
+  export loopster_count=${loopster_count}
   if [[ ${INFINITE} == 'true' ]]; then
     ((COUNT++))
   fi
@@ -141,7 +142,7 @@ if [[ $? -eq 0 ]]; then
   exit 0
 else
   ${FAIL_CLEANUP}
-  if [[ ${countzero} -lt ${COUNT} ]]; then
+  if [[ ${loopster_count} -lt ${COUNT} ]]; then
     squawk 5 "continue looping as ${TEST} failed to return 0"
   fi
 fi

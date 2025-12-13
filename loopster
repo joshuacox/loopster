@@ -52,7 +52,6 @@ short_opts="c:t:m:l:hvw:"
 long_opts="wait:,count:,message:,test:,loop:,help,debug,infinite,version,verbosity,verbose"
 PARSED_OPTIONS=$(getopt --alternative -n "$0" -o "$short_opts" --long "$long_opts" -- "$@")
 
-countfuck=0
 # A little magic, necessary when using getopt.
 eval set -- "${PARSED_OPTIONS}"
 

@@ -19,3 +19,8 @@ CMakeUserPresets.json
 #cmake-build-*
 .aider*
 .envrc
+
+# Node & Next.js
+site/node_modules
+site/.next
+site/out

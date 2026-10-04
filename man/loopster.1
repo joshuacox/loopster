@@ -1,47 +1,82 @@
-.TH LOOPSTER 1 "November 2025" "1.0" "Loopster Manual"
+.TH LOOPSTER 1 "October 2026" "1.0.0" "Loopster Manual"
 .SH NAME
-loopster \- wrapper around commands to repeatedly run a worker command until a test passes
+loopster \- resilient CLI wrapper to repeatedly run a worker command until a test passes
 .SH SYNOPSIS
 .B loopster
 .RI [ options ]
 .SH DESCRIPTION
-Loopster is a shell script that repeatedly executes a specified worker command
-until a test command succeeds or a maximum number of attempts is reached.
-It provides convenient options for controlling the test command, the worker
-command, the number of attempts, and verbosity.
+Loopster is a resilient shell utility that repeatedly executes a specified worker command
+until a test command succeeds (returns exit code 0), or a configurable maximum number of attempts is reached.
+It supports fine-grained verbosity, infinite looping, wait intervals, exponential backoff,
+failure/success cleanup hooks, and graceful cancellation signal handling.
 .SH OPTIONS
 .TP
-.B \-h,\ --help
-Show a brief help message and exit.
+.B \-h,\ \-\-help
+Show a formatted options and usage help message and exit.
 .TP
-.B \-v,\ --version
+.B \-V,\ \-\-version
 Show version information and exit.
 .TP
-.B \-t,\ --test \fIcommand\fR
-Set the command that will be executed to test for success.
+.B \-t,\ \-\-test \fIcommand\fR
+Set the test command evaluated for success (must return exit status 0).
 .TP
-.B \-l,\ --loop \fIcommand\fR
-Set the worker command that will be executed repeatedly until the test succeeds.
+.B \-l,\ \-\-loop \fIcommand\fR
+Set the worker command executed repeatedly before each test attempt.
 .TP
-.B \-c,\ --count \fInumber\fR
-Set the maximum number of loop iterations (default: 33).
+.B \-c,\ \-\-count \fInumber\fR
+Set the maximum number of loop iterations (default: 11).
 .TP
-.B \-v,\ --verbose
-Increase verbosity; can be used multiple times (e.g., \-vvv).
+.B \-w,\ \-\-wait \fIseconds\fR
+Set delay time in seconds between attempts (default: 0).
+.TP
+.B \-\-backoff \fIfactor\fR
+Multiply the wait interval on consecutive failures (e.g. 2 for exponential backoff).
+.TP
+.B \-\-max-wait \fIseconds\fR
+Cap the maximum wait time between attempts when backoff is enabled.
+.TP
+.B \-\-infinite
+Keep running continuously until the test command succeeds.
+.TP
+.B \-\-success\-cleanup \fIcommand\fR
+Execute command hook upon test success.
+.TP
+.B \-\-fail\-cleanup \fIcommand\fR
+Execute command hook if max retry bounds are exhausted or interrupted.
+.TP
+.B \-v,\ \-\-verbose
+Increase verbosity; can be passed multiple times (e.g., \-vvv).
 .TP
 .B \-\-verbosity \fIlevel\fR
-Set the initial verbosity level (default: 0).
+Set explicit numeric squawk verbosity level.
+.TP
+.B \-\-debug
+Enable bash debugging tracing (set \-x).
+.SH ENVIRONMENT VARIABLES
+.TP
+.B TEST, LOOP, COUNT, WAIT, BACKOFF, MAX_WAIT, INFINITE, SUCCESS_CLEANUP, FAIL_CLEANUP, VERBOSITY
+Can be used to specify default values when CLI flags are not provided.
+.SH EXIT CODES
+.TP
+.B 0
+Test command succeeded.
+.TP
+.B 1
+Maximum loop iterations reached without test succeeding.
+.TP
+.B 130
+Process interrupted by user (SIGINT / SIGTERM); cleanup hook was triggered.
 .SH USAGE
 .nf
 # Run \`make test\` until it succeeds, looping \`aider\` as the worker:
 loopster \\
-    --test "make test" \\
-    --loop "aider --yes-always -m \"/test make test\"" \\
-    --count 11 \\
-    -vv
+    \-\-test "make test" \\
+    \-\-loop "aider \-\-yes-always \-m \\"/test make test\\"" \\
+    \-\-count 11 \\
+    \-vv
 .fi
 .SH AUTHOR
-Joshua Edward McLauglin Cox <https://joshuacox.github.io/loopster>
+Joshua Edward McLaughlin Cox <https://joshuacox.github.io/loopster>
 .SH SEE ALSO
 .BR bash (1),
 .BR getopt (1)

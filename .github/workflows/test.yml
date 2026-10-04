@@ -1,0 +1,40 @@
+name: ShellCheck & Test Suite
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  shellcheck:
+    name: Lint Shell Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: '.'
+          ignore_paths: 'site node_modules .next'
+          severity: warning
+
+  bats-test:
+    name: Run BATS Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup BATS testing framework
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.11.0
+
+      - name: Run BATS Tests
+        run: |
+          bats -t test/main.bats

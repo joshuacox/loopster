@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { Terminal, GitBranch, BookOpen, ShieldCheck, Zap, RefreshCw, Cpu, Layers } from 'lucide-react';
+import { Terminal, GitBranch, BookOpen, ShieldCheck, Zap, RefreshCw, Cpu, Layers, Sparkles, AlertCircle } from 'lucide-react';
 import CodeBlock from '@/components/CodeBlock';
 import AdBanner from '@/components/AdBanner';
+import CommandGenerator from '@/components/CommandGenerator';
 
 function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -23,21 +24,22 @@ export default function Home() {
             </span>
             <span>Loopster</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
-              v1.0
+              v1.0.0
             </span>
           </div>
 
-          <nav className="flex items-center gap-6 text-sm text-slate-300">
-            <a href="#quickstart" className="hover:text-teal-400 transition">Quick Start</a>
-            <a href="#features" className="hover:text-teal-400 transition">Features</a>
-            <a href="#options" className="hover:text-teal-400 transition">CLI Reference</a>
-            <a href="#examples" className="hover:text-teal-400 transition">Examples</a>
+          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-slate-300">
+            <a href="#quickstart" className="hover:text-teal-400 transition hidden md:inline-block">Quick Start</a>
+            <a href="#generator" className="hover:text-teal-400 transition text-teal-300 font-medium">Generator</a>
+            <a href="#options" className="hover:text-teal-400 transition hidden sm:inline-block">CLI Reference</a>
+            <a href="#exit-codes" className="hover:text-teal-400 transition hidden lg:inline-block">Exit Codes</a>
+            <a href="#examples" className="hover:text-teal-400 transition hidden md:inline-block">Examples</a>
             <Link href="/privacy" className="hover:text-teal-400 transition">Privacy</Link>
             <a
               href="https://github.com/joshuacox/loopster"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium transition border border-slate-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium transition border border-slate-700 text-xs sm:text-sm"
             >
               <GithubIcon className="w-4 h-4" />
               <span>GitHub</span>
@@ -60,24 +62,22 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Loopster repeatedly runs a <strong className="text-slate-200">worker command</strong> until a <strong className="text-slate-200">test command</strong> passes or max bounds are met. Engineered for flaky test suites, async service polling, automated CI/CD retries, and AI-driven development loops.
+            Loopster repeatedly executes a <strong className="text-slate-200">worker command</strong> until a <strong className="text-slate-200">test command</strong> succeeds or safety bounds are hit. Engineered with exponential backoff, interrupt trapping, cleanups, and seamless CI/CD integration.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
             <a
-              href="#quickstart"
+              href="#generator"
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-center transition shadow-lg shadow-teal-500/20"
             >
-              Get Started in 30 Seconds
+              Try Interactive Generator
             </a>
             <a
-              href="https://github.com/joshuacox/loopster"
-              target="_blank"
-              rel="noreferrer"
+              href="#quickstart"
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-white font-medium border border-slate-700 transition"
             >
-              <GithubIcon className="w-5 h-5" />
-              View Source Repository
+              <Terminal className="w-4 h-4 text-teal-400" />
+              Quick Installation
             </a>
           </div>
         </div>
@@ -88,6 +88,11 @@ export default function Home() {
         {/* Top AdSense Placement */}
         <AdBanner slot="1029384756" />
 
+        {/* Interactive Command Generator */}
+        <section id="generator" className="my-16 scroll-mt-20">
+          <CommandGenerator />
+        </section>
+
         {/* Quickstart */}
         <section id="quickstart" className="my-16 scroll-mt-20">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-4 flex items-center gap-3">
@@ -95,28 +100,31 @@ export default function Home() {
             Quick Start & Installation
           </h2>
           <p className="text-slate-400 mb-6">
-            Install Loopster instantly via curl or clone the repository and build via CMake:
+            Install Loopster directly into your environment using the bootstrap installer or build with CMake:
           </p>
 
-          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">One-Line Automated Install</h3>
+          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">One-Line Automated Bootstrap</h3>
           <CodeBlock
             code="curl -sL https://raw.githubusercontent.com/joshuacox/loopster/refs/heads/main/bootstrap.sh | bash"
           />
 
-          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mt-6 mb-2">Manual CMake Build & Installation</h3>
+          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mt-6 mb-2">Manual CMake & CPack Build</h3>
           <CodeBlock
             code={`git clone https://github.com/joshuacox/loopster.git
 cd loopster
 cmake .
 make
-sudo make install`}
+sudo make install
+
+# Or generate .deb and .tar.gz packages:
+cpack`}
           />
         </section>
 
         {/* Key Features */}
         <section id="features" className="my-16 scroll-mt-20">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-8">
-            Why Loopster?
+            Engineered for Resilience
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 hover:border-teal-500/40 transition">
@@ -133,9 +141,9 @@ sudo make install`}
               <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-4">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Failure & Success Hooks</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Graceful Signal Trapping</h3>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Execute dedicated cleanup actions on final outcome (<code className="text-teal-300">--fail-cleanup</code> and <code className="text-teal-300">--success-cleanup</code>).
+                Clean up reliably even if aborted early via <code className="text-teal-300">SIGINT</code> (Ctrl+C) or <code className="text-teal-300">SIGTERM</code>.
               </p>
             </div>
 
@@ -143,9 +151,9 @@ sudo make install`}
               <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-4">
                 <Zap className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Granular Verbosity</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Exponential Backoff</h3>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Control terminal output with <code className="text-teal-300">-v</code> or squawk levels up to automated bash trace debugging (<code className="text-teal-300">set -x</code>).
+                Prevent service spamming with multiplier backoff (<code className="text-teal-300">--backoff</code>) and max wait limits (<code className="text-teal-300">--max-wait</code>).
               </p>
             </div>
           </div>
@@ -179,7 +187,7 @@ sudo make install`}
                   <td className="px-6 py-3.5 text-teal-400 font-bold">-t, --test &lt;cmd&gt;</td>
                   <td className="px-6 py-3.5">echo ./test.sh</td>
                   <td className="px-6 py-3.5 text-amber-300">$TEST</td>
-                  <td className="px-6 py-3.5 font-sans text-slate-300">Verification command that determines success (exit code 0)</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Verification command that determines success (returns exit code 0)</td>
                 </tr>
                 <tr className="hover:bg-slate-900/30">
                   <td className="px-6 py-3.5 text-teal-400 font-bold">-l, --loop &lt;cmd&gt;</td>
@@ -194,6 +202,18 @@ sudo make install`}
                   <td className="px-6 py-3.5 font-sans text-slate-300">Delay (in seconds) between iterations</td>
                 </tr>
                 <tr className="hover:bg-slate-900/30">
+                  <td className="px-6 py-3.5 text-teal-400 font-bold">--backoff &lt;factor&gt;</td>
+                  <td className="px-6 py-3.5">1</td>
+                  <td className="px-6 py-3.5 text-amber-300">$BACKOFF</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Multiplier factor for wait time on consecutive failures (e.g. 2)</td>
+                </tr>
+                <tr className="hover:bg-slate-900/30">
+                  <td className="px-6 py-3.5 text-teal-400 font-bold">--max-wait &lt;sec&gt;</td>
+                  <td className="px-6 py-3.5">0</td>
+                  <td className="px-6 py-3.5 text-amber-300">$MAX_WAIT</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Upper cap on wait interval when backoff is enabled</td>
+                </tr>
+                <tr className="hover:bg-slate-900/30">
                   <td className="px-6 py-3.5 text-teal-400 font-bold">--infinite</td>
                   <td className="px-6 py-3.5">false</td>
                   <td className="px-6 py-3.5 text-amber-300">$INFINITE</td>
@@ -203,13 +223,19 @@ sudo make install`}
                   <td className="px-6 py-3.5 text-teal-400 font-bold">--success-cleanup &lt;cmd&gt;</td>
                   <td className="px-6 py-3.5">echo success</td>
                   <td className="px-6 py-3.5 text-amber-300">$SUCCESS_CLEANUP</td>
-                  <td className="px-6 py-3.5 font-sans text-slate-300">Command to trigger when the test finally passes</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Hook command triggered when test finally passes</td>
                 </tr>
                 <tr className="hover:bg-slate-900/30">
                   <td className="px-6 py-3.5 text-teal-400 font-bold">--fail-cleanup &lt;cmd&gt;</td>
                   <td className="px-6 py-3.5">echo fail</td>
                   <td className="px-6 py-3.5 text-amber-300">$FAIL_CLEANUP</td>
-                  <td className="px-6 py-3.5 font-sans text-slate-300">Command to trigger if max loop attempts fail</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Hook command triggered if attempts fail or loop is interrupted</td>
+                </tr>
+                <tr className="hover:bg-slate-900/30">
+                  <td className="px-6 py-3.5 text-teal-400 font-bold">-V, --version</td>
+                  <td className="px-6 py-3.5">-</td>
+                  <td className="px-6 py-3.5">-</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Print version number and exit</td>
                 </tr>
                 <tr className="hover:bg-slate-900/30">
                   <td className="px-6 py-3.5 text-teal-400 font-bold">-v, --verbose</td>
@@ -218,19 +244,52 @@ sudo make install`}
                   <td className="px-6 py-3.5 font-sans text-slate-300">Increases verbosity output level with '#' squawk padding</td>
                 </tr>
                 <tr className="hover:bg-slate-900/30">
-                  <td className="px-6 py-3.5 text-teal-400 font-bold">--verbosity &lt;lvl&gt;</td>
-                  <td className="px-6 py-3.5">0</td>
-                  <td className="px-6 py-3.5 text-amber-300">$VERBOSITY</td>
-                  <td className="px-6 py-3.5 font-sans text-slate-300">Directly set numeric squawk verbosity level</td>
-                </tr>
-                <tr className="hover:bg-slate-900/30">
                   <td className="px-6 py-3.5 text-teal-400 font-bold">--debug</td>
                   <td className="px-6 py-3.5">false</td>
                   <td className="px-6 py-3.5 text-amber-300">-</td>
-                  <td className="px-6 py-3.5 font-sans text-slate-300">Activate debug tracking mode</td>
+                  <td className="px-6 py-3.5 font-sans text-slate-300">Activate debug tracking mode (bash set -x)</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Exit Codes Reference */}
+        <section id="exit-codes" className="my-16 scroll-mt-20">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-6 flex items-center gap-3">
+            <AlertCircle className="text-teal-400 w-7 h-7" />
+            Standard Exit Codes for CI/CD Pipelines
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-5">
+              <span className="inline-block px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-xs mb-3">
+                Exit Code 0
+              </span>
+              <h3 className="font-semibold text-white mb-1">Success</h3>
+              <p className="text-xs text-slate-400">
+                The test condition returned 0. Success cleanup executed and the pipeline can safely proceed.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-5">
+              <span className="inline-block px-2.5 py-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold text-xs mb-3">
+                Exit Code 1
+              </span>
+              <h3 className="font-semibold text-white mb-1">Max Iterations Exceeded</h3>
+              <p className="text-xs text-slate-400">
+                The test did not pass within the allotted count limit. Fail cleanup ran and the process returned failure.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-5">
+              <span className="inline-block px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 font-mono font-bold text-xs mb-3">
+                Exit Code 130
+              </span>
+              <h3 className="font-semibold text-white mb-1">Interrupted / Terminated</h3>
+              <p className="text-xs text-slate-400">
+                Loopster was interrupted by SIGINT (Ctrl+C) or SIGTERM. Fail cleanup was triggered for graceful teardown.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -242,18 +301,20 @@ sudo make install`}
 
           <div className="space-y-8">
             <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-              <h3 className="text-lg font-bold text-teal-300 mb-2">1. Waiting for a Database or Microservice to be Healthy</h3>
+              <h3 className="text-lg font-bold text-teal-300 mb-2">1. Waiting for a Database or Microservice with Exponential Backoff</h3>
               <p className="text-slate-400 text-sm mb-4">
-                Poll an API healthcheck endpoint every 3 seconds up to 20 times while executing a progress heartbeat:
+                Poll an API healthcheck starting at 2s interval, doubling each time up to 30s max:
               </p>
               <CodeBlock
                 code={`loopster \\
   --test "curl -fsS http://localhost:8080/healthz" \\
-  --loop "echo 'Waiting for service container to boot...'" \\
-  --wait 3 \\
-  --count 20 \\
-  --success-cleanup "echo 'Backend is ready!' && ./run-migrations.sh" \\
-  --fail-cleanup "echo 'Backend failed to start!' && docker-compose logs"`}
+  --loop "echo 'Checking microservice readiness...'" \\
+  --wait 2 \\
+  --backoff 2 \\
+  --max-wait 30 \\
+  --count 15 \\
+  --success-cleanup "./run-migrations.sh" \\
+  --fail-cleanup "docker-compose logs --tail 100"`}
               />
             </div>
 
@@ -273,16 +334,16 @@ sudo make install`}
             </div>
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-              <h3 className="text-lg font-bold text-teal-300 mb-2">3. Retrying Flaky Network Deployment</h3>
+              <h3 className="text-lg font-bold text-teal-300 mb-2">3. Retrying Flaky Network Deployment with Complex Piped Tests</h3>
               <p className="text-slate-400 text-sm mb-4">
-                Retry an intermittent deployment step up to 5 times with a 10s backoff:
+                Verify Kubernetes pod rollout status using pipes:
               </p>
               <CodeBlock
                 code={`loopster \\
-  --loop "terraform apply -auto-approve" \\
-  --test "terraform plan -detailed-exitcode" \\
-  --count 5 \\
-  --wait 10 \\
+  --loop "kubectl rollout restart deployment/api" \\
+  --test "kubectl get deployment api -o jsonpath='{.status.readyReplicas}' | grep -q '3'" \\
+  --count 10 \\
+  --wait 5 \\
   -vv`}
               />
             </div>

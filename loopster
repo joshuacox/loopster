@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-: ${VERBOSITY:=0}
+VERSION="1.0.0"
+: "${VERBOSITY:=0}"
 
 squawk () {
   # This function simplifies error reporting and verbosity
@@ -8,10 +9,10 @@ squawk () {
   # e.g. `squawk 3 "This is a squawk"`
   # if the current verbosity level is greater than or equal to
   # the number given then this function will echo out your message
-  # and pad it with # to let you now how verbose that message was
+  # and pad it with # to let you know how verbose that message was
   squawk_lvl="$1"
   shift
-  squawk="$@"
+  squawk="$*"
 
   if [[ "${VERBOSITY}" -ge "$squawk_lvl" ]] ; then
     if [[ "$squawk_lvl" -le 20 ]] ; then
@@ -22,13 +23,11 @@ squawk () {
       done
       printf ' %s\n' "$squawk"
     else
-      printf '#>{ '
-      printf '%s' "$squawk_lvl"
-      printf ' }<# '
-      printf ' %s\n' "$squawk"
+      printf '#>{ %s }<#  %s\n' "$squawk_lvl" "$squawk"
     fi
   fi
 }
+
 set_verbosity () {
   if ! [[ "$1" =~ ^[0-9]+$ ]]; then
     VERBOSITY=0
@@ -38,110 +37,209 @@ set_verbosity () {
   squawk 5 " verbosity is now ${VERBOSITY}"
 }
 
+print_version () {
+  printf 'loopster %s\n' "${VERSION}"
+}
+
 print_help () {
-  printf 'useage:\n%s  --count 100 --success-cleanup "git checkout -b $this_branch-success" --fail-cleanup "git checkout -b $this_branch-fail"  --test "make clean && make && sudo make install && make test" --loop "aider --file src/main.c -m '\''improve performance'\''"\n' $0
+  cat << 'EOF'
+Usage: loopster [OPTIONS]
+
+Repeatedly executes a worker command until a test command succeeds,
+or maximum attempts are reached.
+
+Options:
+  -c, --count <number>       Maximum retry attempts (default: 11)
+  -t, --test <cmd>           Test command for success (returns 0 on success)
+  -l, --loop <cmd>           Worker command to run each iteration
+  -w, --wait <sec>           Wait time in seconds between iterations (default: 0)
+      --backoff <factor>     Backoff multiplier for wait time (default: 1)
+      --max-wait <sec>       Maximum wait cap when backoff is applied
+      --infinite             Run continuously until test succeeds
+      --success-cleanup <cmd> Command to execute upon test success
+      --fail-cleanup <cmd>   Command to execute if attempts are exhausted or interrupted
+  -v, --verbose              Increase verbosity level (-v, -vv, etc.)
+      --verbosity <level>    Set specific numeric verbosity level
+      --debug                Enable debug tracing (set -x)
+  -V, --version              Show version information and exit
+  -h, --help                 Show this help message and exit
+
+Environment Variables (used as defaults if flags not passed):
+  TEST, LOOP, COUNT, WAIT, BACKOFF, MAX_WAIT, INFINITE, FAIL_CLEANUP, SUCCESS_CLEANUP, VERBOSITY
+
+Examples:
+  # Wait for a service to boot with 2s interval
+  loopster -t "curl -fsS http://localhost:8080/healthz" -l "echo waiting..." -w 2 -c 30
+
+  # Run coding agent until test suite succeeds with git branch cleanup
+  loopster --count 10 \
+    --test "make test" \
+    --loop "aider --message 'fix test failures'" \
+    --success-cleanup "git checkout -b fix-success" \
+    --fail-cleanup "git checkout -b fix-failed"
+EOF
 }
 
 increase_verbosity () {
   ((++VERBOSITY))
   squawk 5 " verbosity is now ${VERBOSITY}"
 }
-ORIGINAL_OPTS=$@
-# Execute getopt on the arguments passed to this program, identified by the special character $@
-short_opts="c:t:m:l:hvw:"
-long_opts="wait:,count:,message:,test:,loop:,help,debug,infinite,version,verbosity,verbose"
+
+ORIGINAL_OPTS="$*"
+# Execute getopt on the arguments passed to this program
+short_opts="c:t:m:l:hvw:V"
+long_opts="wait:,count:,message:,test:,loop:,help,debug,infinite,version,verbosity:,verbose,backoff:,max-wait:"
 PARSED_OPTIONS=$(getopt --alternative -n "$0" -o "$short_opts" --long "$long_opts" -- "$@")
+
+if [[ $? -ne 0 ]]; then
+  print_help
+  exit 1
+fi
 
 # A little magic, necessary when using getopt.
 eval set -- "${PARSED_OPTIONS}"
 
-  opt_loop_count=1
-  while true; do
-    squawk 5 "$opt_loop_count $@"
-    ((++opt_loop_count))
-    case "$1" in
-      -h|--help)
-        print_help
-        exit 0
-        shift;;
-      --debug)
-        debug=true
-        shift;;
-      -c|--count)
-        COUNT="$2"
-        shift 2 ;;
-      -l|--loop)
-        LOOP="$2"
-        shift 2 ;;
-      -t|--test)
-        TEST="$2"
-        shift 2 ;;
-      --fail-cleanup)
-        FAIL_CLEANUP="$2"
-        shift 2 ;;
-      --success-cleanup)
-        SUCCESS_CLEANUP="$2"
-        shift 2 ;;
-      --infinite)
-        INFINITE='true'
-        shift ;;
-      -w|--wait)
-        WAIT="$2"
-        shift 2 ;;
-      -v|--verbose)
-        increase_verbosity
-        shift;;
-      --verbosity)
-        set_verbosity $2
-        shift 2 ;;
-      --)
-        shift
-        break;;
-    esac
-  done
+opt_loop_count=1
+while true; do
+  squawk 5 "$opt_loop_count $*"
+  ((++opt_loop_count))
+  case "$1" in
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    -V|--version)
+      print_version
+      exit 0
+      ;;
+    --debug)
+      debug=true
+      shift
+      ;;
+    -c|--count)
+      COUNT="$2"
+      shift 2
+      ;;
+    -l|--loop)
+      LOOP="$2"
+      shift 2
+      ;;
+    -t|--test)
+      TEST="$2"
+      shift 2
+      ;;
+    --fail-cleanup)
+      FAIL_CLEANUP="$2"
+      shift 2
+      ;;
+    --success-cleanup)
+      SUCCESS_CLEANUP="$2"
+      shift 2
+      ;;
+    --infinite)
+      INFINITE='true'
+      shift
+      ;;
+    -w|--wait)
+      WAIT="$2"
+      shift 2
+      ;;
+    --backoff)
+      BACKOFF="$2"
+      shift 2
+      ;;
+    --max-wait)
+      MAX_WAIT="$2"
+      shift 2
+      ;;
+    -v|--verbose)
+      increase_verbosity
+      shift
+      ;;
+    --verbosity)
+      set_verbosity "$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+  esac
+done
 
 : "${TEST:=echo ./test.sh}"
 : "${LOOP:=echo ./iter.sh}"
 : "${COUNT:=11}"
 : "${WAIT:=0}"
+: "${BACKOFF:=1}"
+: "${MAX_WAIT:=0}"
 : "${INFINITE:='false'}"
 : "${FAIL_CLEANUP:=echo fail}"
 : "${SUCCESS_CLEANUP:=echo success}"
+
+# Graceful cleanup on interrupt (SIGINT/SIGTERM)
+cleanup_on_interrupt () {
+  squawk 1 "Interrupted by user, executing fail cleanup..."
+  eval "${FAIL_CLEANUP}"
+  exit 130
+}
+trap cleanup_on_interrupt INT TERM
+
 loopster_count=0
-if [[ $COUNT -eq 0 ]];  then
+if [[ $COUNT -eq 0 ]]; then
   INFINITE='false'
   COUNT=1
 fi
 
-if [[ ${VERBOSITY} -gt 10 ]]; then
+if [[ ${VERBOSITY} -gt 10 ]] || [[ "${debug:-false}" == "true" ]]; then
   set -x
 fi
+
+test_passed=false
+current_wait="${WAIT}"
+
 while [[ ${loopster_count} -lt ${COUNT} ]]; do
-  ${LOOP}
-  ${TEST}
-  if [[ $? -eq 0 ]]; then
+  # Execute worker command
+  eval "${LOOP}"
+
+  # Execute test command
+  eval "${TEST}"
+  test_status=$?
+
+  if [[ ${test_status} -eq 0 ]]; then
+    test_passed=true
     break
   else
     if [[ ${loopster_count} -lt ${COUNT} ]]; then
       squawk 5 "continue looping as ${TEST} failed to return 0"
     fi
   fi
+
   ((loopster_count++))
   export loopster_count=${loopster_count}
+
   if [[ ${INFINITE} == 'true' ]]; then
     ((COUNT++))
   fi
-  if [[ ${WAIT} -gt 0 ]]; then
-    sleep ${WAIT}
+
+  if [[ ${current_wait} -gt 0 ]]; then
+    sleep "${current_wait}"
+    if [[ ${BACKOFF} -gt 1 ]]; then
+      current_wait=$(( current_wait * BACKOFF ))
+      if [[ ${MAX_WAIT} -gt 0 ]] && [[ ${current_wait} -gt ${MAX_WAIT} ]]; then
+        current_wait="${MAX_WAIT}"
+      fi
+    fi
   fi
 done
-${TEST}
-if [[ $? -eq 0 ]]; then
-  ${SUCCESS_CLEANUP}
+
+if [[ "${test_passed}" == "true" ]]; then
+  eval "${SUCCESS_CLEANUP}"
   exit 0
 else
-  ${FAIL_CLEANUP}
+  eval "${FAIL_CLEANUP}"
   if [[ ${loopster_count} -lt ${COUNT} ]]; then
     squawk 5 "continue looping as ${TEST} failed to return 0"
   fi
+  exit 1
 fi
